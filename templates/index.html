@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IM Solutions Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        body {
+            background: #fff;
+        }
+        .message {
+            max-width: 80%;
+            margin: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+        }
+        .quick-btn {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: none;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .quick-btn:hover {
+            background: #1976d2;
+            color: #fff;
+        }
+        .header-btn {
+            background: none;
+            border: none;
+            color: #666;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .header-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .voice-btn {
+            background: #e3f2fd;
+            border: none;
+            color: #1976d2;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .voice-btn.active {
+            background: #1976d2;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #calendar-container {
+            display: none;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 300px;
+        }
+        .fc-event {
+            cursor: pointer;
+        }
+        .scheduling-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 26rem;
+            transform: translateY(-50%);
+            width: 350px;
+            max-width: 90vw;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+        }
+        .scheduling-form::before {
+            display: none;
+        }
+        #chat-messages {
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 min-h-screen relative">
+    <!-- Navigation Bar -->
+    <nav class="flex items-center justify-between px-8 py-4 bg-transparent">
+        <div class="flex items-center gap-2">
+            <span class="text-3xl font-bold text-white">imsolutions</span>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2L12 22M12 2L5 9M12 2L19 9" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="flex gap-8 text-white font-semibold text-lg">
+            <a href="#" class="hover:text-blue-200">WHAT WE DO</a>
+            <a href="#" class="hover:text-blue-200">BLOG</a>
+            <a href="#" class="hover:text-blue-200">PODCAST</a>
+            <a href="#" class="hover:text-blue-200">CAREERS</a>
+        </div>
+        <a href="#" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-6 py-2 rounded-full shadow-lg transition">WORK WITH US</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="flex flex-col md:flex-row items-center justify-between px-8 md:px-24 py-16 md:py-24">
+        <div class="max-w-xl text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4">Unlock Your Business Potential With <span class="text-blue-200">Facebook & Instagram Advertising</span></h1>
+            <p class="text-lg md:text-xl text-blue-100 mb-8">Facebook Premier Level Partner Agency</p>
+            <a href="#" class="inline-block bg-pink-500 hover:bg-pink-600 text-white font-bold px-8 py-3 rounded-full text-lg shadow-lg transition mb-8">WORK WITH US</a>
+            <div class="flex flex-wrap gap-6 mt-10 justify-center md:justify-start">
+                <div class="flex flex-col items-center">
+                    <span class="bg-white rounded-full p-2 mb-2"><img src="https://img.icons8.com/ios-filled/50/1976d2/facebook-new.png" alt="Facebook" class="w-8 h-8"></span>
+                    <span class="text-xs text-white font-semibold">Facebook Premier<br>Level Agency Partner</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="bg-white rounded-full p-2 mb-2"><img src="https://img.icons8.com/ios-filled/50/1976d2/google-logo.png" alt="Google" class="w-8 h-8"></span>
+                    <span class="text-xs text-white font-semibold">Google Endorsed<br>Marketing Partner</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="bg-white rounded-full p-2 mb-2"><img src="https://img.icons8.com/ios-filled/50/1976d2/forbes.png" alt="Forbes" class="w-8 h-8"></span>
+                    <span class="text-xs text-white font-semibold">Forbes Agency<br>Council Member</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="bg-white rounded-full p-2 mb-2"><img src="https://img.icons8.com/ios-filled/50/1976d2/5000.png" alt="Inc 5000" class="w-8 h-8"></span>
+                    <span class="text-xs text-white font-semibold">Inc. 5000<br>Fastest Growing Company</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-12 md:mt-0 md:ml-16 flex-1 flex justify-center">
+            <div class="relative w-80 h-96 bg-white bg-opacity-10 rounded-3xl shadow-2xl flex flex-col items-center justify-center">
+                <img src="https://img.icons8.com/ios-filled/100/4ade80/rocket--v1.png" alt="Rocket" class="w-24 h-24 mb-4">
+                <div class="flex flex-col gap-2 w-full px-6">
+                    <div class="bg-white bg-opacity-80 rounded-lg p-2 flex items-center gap-2">
+                        <span class="text-blue-600 font-bold">100K</span>
+                        <span class="text-xs text-gray-700">Likes</span>
+                    </div>
+                    <div class="bg-white bg-opacity-80 rounded-lg p-2 flex items-center gap-2">
+                        <span class="text-blue-600 font-bold">$100M</span>
+                        <span class="text-xs text-gray-700">Annual Ad Spend</span>
+                    </div>
+                    <div class="bg-white bg-opacity-80 rounded-lg p-2 flex items-center gap-2">
+                        <span class="text-blue-600 font-bold">15+</span>
+                        <span class="text-xs text-gray-700">Years Experience</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Company Stats Section -->
+    <section class="flex flex-wrap justify-center gap-12 px-8 pb-24">
+        <div class="flex flex-col items-center">
+            <span class="text-3xl font-bold text-white">$100M</span>
+            <span class="text-blue-100 text-sm">In Annual Digital Ad Spend</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-3xl font-bold text-white">15+</span>
+            <span class="text-blue-100 text-sm">Years of Facebook Advertising Experience</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-3xl font-bold text-white">Inc. 5000</span>
+            <span class="text-blue-100 text-sm">Fastest Growing Company</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-3xl font-bold text-white">Forbes</span>
+            <span class="text-blue-100 text-sm">Agency Council Member</span>
+        </div>
+    </section>
+
+    <!-- Floating Chat Button -->
+    <div id="chatbot-toggle" class="fixed bottom-6 right-6 z-50">
+        <button onclick="toggleChatbot()" class="bg-blue-600 text-white rounded-full p-4 shadow-lg">
+            <span>💬</span>
+        </button>
+    </div>
+
+    <!-- Chatbot Window (hidden by default) -->
+    <div id="chatbot-window" class="fixed bottom-6 right-6 w-96 bg-white rounded-lg shadow-lg p-4 z-50 flex flex-col hidden" style="height: 650px;">
+        <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-blue-600">IM Solutions Chatbot</span>
+            <div class="flex gap-2">
+                <button onclick="refreshChat()" class="header-btn" title="Refresh Chat">🔄</button>
+                <button onclick="closeChatbot()" class="header-btn" title="Close Chat">✕</button>
+            </div>
+        </div>
+        <div id="calendar-container"></div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto mb-2 bg-gray-50 p-2 rounded" style="scroll-behavior: smooth; min-height: 0;">
+            <div class="message bot-message">
+                Hello! I'm the IM Solutions chatbot. How can I help you today? I can provide information about our services, including digital marketing, advertising, branding, and more. I can also help you schedule appointments.
+            </div>
+        </div>
+        <div id="scheduling-form" class="scheduling-form">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">Schedule Appointment</h3>
+                <button onclick="cancelScheduling()" class="text-gray-500 hover:text-gray-700">
+                    ✕
+                </button>
+            </div>
+            <input type="text" id="appointment-title" placeholder="Appointment Title" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="appointment-time" placeholder="Select date & time" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <textarea id="appointment-notes" placeholder="Notes (optional)" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="cancelScheduling()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">Cancel</button>
+                <button onclick="submitAppointment()" class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Schedule</button>
+            </div>
+        </div>
+        <div class="mb-2 flex flex-wrap gap-2" id="quick-btns">
+            <button class="quick-btn" id="btn-whatwedo" onclick="sendQuick('What we do', 'btn-whatwedo')">What we do</button>
+            <button class="quick-btn" id="btn-services" onclick="sendQuick('Services', 'btn-services')">Services</button>
+            <button class="quick-btn" id="btn-aboutus" onclick="sendQuick('About Us', 'btn-aboutus')">About Us</button>
+            <button class="quick-btn" id="btn-schedule" onclick="showSchedulingForm()">Schedule Meeting</button>
+            <button class="quick-btn" id="btn-cancel" onclick="showCancelForm()">Cancel Appointment</button>
+
+            <button class="quick-btn" id="btn-lead" onclick="showLeadForm()">Share Contact</button>
+        </div>
+        <!-- Cancel Appointment Form -->
+        <div id="cancel-form" class="scheduling-form">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">Cancel Appointment</h3>
+                <button onclick="cancelCancelForm()" class="text-gray-500 hover:text-gray-700">
+                    ✕
+                </button>
+            </div>
+            <input type="text" id="appointment-id" placeholder="Enter Appointment ID" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="flex justify-end space-x-2">
+                <button onclick="cancelCancelForm()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">Cancel</button>
+                <button onclick="submitCancellation()" class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">Cancel Appointment</button>
+            </div>
+        </div>
+
+        <div id="user-details-form" class="scheduling-form">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">Welcome! Please share your details</h3>
+                <button onclick="skipUserDetails()" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <input type="text" id="user-name" placeholder="Your Name" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="email" id="user-email" placeholder="Email (optional)" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="tel" id="user-phone" placeholder="Phone (optional)" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="flex justify-end space-x-2">
+                <button onclick="skipUserDetails()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">Skip</button>
+                <button onclick="submitUserDetails()" class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Continue</button>
+            </div>
+        </div>
+        <div id="lead-form" class="scheduling-form">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">Share your contact</h3>
+                <button onclick="cancelLeadForm()" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <input type="text" id="lead-name" placeholder="Your Name" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="email" id="lead-email" placeholder="Email (optional)" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="tel" id="lead-phone" placeholder="Phone (optional)" class="w-full p-2 mb-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <textarea id="lead-message" placeholder="How can we help? (optional)" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="cancelLeadForm()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">Cancel</button>
+                <button onclick="submitLead()" class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Submit</button>
+            </div>
+        </div>
+
+        <div class="flex mt-auto">
+            <input id="user-input" type="text" class="flex-1 border rounded-l p-2" placeholder="Type your message...">
+            <button onclick="toggleVoiceInput()" class="voice-btn" id="voice-btn" title="Voice Input">
+                <span>🎤</span>
+                <span class="hidden sm:inline">Voice</span>
+            </button>
+            <button onclick="sendMessage()" class="bg-blue-600 text-white px-4 rounded-r">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        let loadingDiv = null;
+        let calendar = null;
+        let recognition = null;
+        let isListening = false;
+        let speechSynthesis = window.speechSynthesis;
+        let leadCapture = { active: false, step: 0, data: {} };
+        let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        let userDetails = null;
+        let chatbotOpened = false;
+
+        // Initialize FullCalendar
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar-container');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next saveButton',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                customButtons: {
+                    saveButton: {
+                        text: 'Save',
+                        click: function() {
+                            toggleCalendar();
+                        }
+                    }
+                },
+                selectable: true,
+                select: function(info) {
+                    showSchedulingForm(info.start, info.end);
+                },
+                eventClick: function(info) {
+                    showEventDetails(info.event);
+                }
+            });
+
+            // Initialize flatpickr for appointment time
+            flatpickr("#appointment-time", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true,
+                wrap: false,
+                allowInput: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Add custom Save button if not already present
+                    if (!instance.calendarContainer.querySelector('.flatpickr-save')) {
+                        const saveBtn = document.createElement('button');
+                        saveBtn.textContent = 'Save';
+                        saveBtn.type = 'button';
+                        saveBtn.className = 'flatpickr-save bg-blue-600 text-white px-3 py-1 rounded ml-2';
+                        saveBtn.style.marginLeft = '8px';
+                        saveBtn.onclick = function() {
+                            instance.close();
+                        };
+                        // Place the button in the flatpickr footer
+                        let fpFooter = instance.calendarContainer.querySelector('.flatpickr-footer');
+                        if (!fpFooter) {
+                            fpFooter = document.createElement('div');
+                            fpFooter.className = 'flatpickr-footer';
+                            instance.calendarContainer.appendChild(fpFooter);
+                        }
+                        fpFooter.appendChild(saveBtn);
+                    }
+                }
+            });
+
+            // Initialize speech recognition
+            initSpeechRecognition();
+        });
+
+        function toggleCalendar() {
+            const calendarContainer = document.getElementById('calendar-container');
+            if (calendarContainer.style.display === 'none') {
+                calendarContainer.style.display = 'block';
+                calendar.render();
+            } else {
+                calendarContainer.style.display = 'none';
+            }
+        }
+
+        function showSchedulingForm(start = null, end = null) {
+            const form = document.getElementById('scheduling-form');
+            form.style.display = 'block';
+            if (start && end) {
+                document.getElementById('appointment-time').value = start.toISOString().slice(0, 16);
+            }
+        }
+
+        function cancelScheduling() {
+            const form = document.getElementById('scheduling-form');
+            form.style.display = 'none';
+            document.getElementById('appointment-title').value = '';
+            document.getElementById('appointment-time').value = '';
+            document.getElementById('appointment-notes').value = '';
+        }
+
+        function submitAppointment() {
+            const title = document.getElementById('appointment-title').value;
+            const time = document.getElementById('appointment-time').value;
+            const notes = document.getElementById('appointment-notes').value;
+
+            if (!title || !time) {
+                addMessage('Please fill in all required fields.', false);
+                return;
+            }
+
+            // Send to server
+            fetch('/schedule_appointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    time: time,
+                    notes: notes
+                })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 409) {
+                    // Handle double-booking error
+                    const existingTime = new Date(data.existing_appointment.time).toLocaleString();
+                    addMessage(`This time slot is already booked by "${data.existing_appointment.title}" at ${existingTime}. Please choose a different time.`, false);
+                } else if (data.error) {
+                    addMessage(data.error, false);
+                } else {
+                    // Add event to calendar
+                    calendar.addEvent({
+                        title: title,
+                        start: time,
+                        description: notes,
+                        extendedProps: {
+                            appointmentId: data.appointment_id
+                        }
+                    });
+                    addMessage(`Appointment scheduled successfully! Your appointment ID is: ${data.appointment_id}`, false);
+                    cancelScheduling();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addMessage('Failed to schedule appointment. Please try again.', false);
+            });
+        }
+
+        function showEventDetails(event) {
+            const details = `Title: ${event.title}\nTime: ${event.start.toLocaleString()}\n${event.extendedProps.description ? 'Notes: ' + event.extendedProps.description : ''}`;
+            addMessage(details, false);
+        }
+
+        function addMessage(message, isUser) {
+            if (loadingDiv) {
+                loadingDiv.remove();
+                loadingDiv = null;
+            }
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Speak bot messages
+            if (!isUser) {
+                speak(message);
+            }
+        }
+
+        function showLoading() {
+            if (loadingDiv) return;
+            loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.id = 'loading-animation';
+            loadingDiv.innerHTML = '<span id="dots">Loading</span>';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            animateDots();
+        }
+
+        let dotsInterval;
+        function animateDots() {
+            const dotsSpan = document.getElementById('dots');
+            let dotCount = 0;
+            clearInterval(dotsInterval);
+            dotsInterval = setInterval(() => {
+                dotCount = (dotCount + 1) % 4;
+                dotsSpan.textContent = 'Loading' + '.'.repeat(dotCount);
+            }, 500);
+        }
+
+        function hideLoading() {
+            if (loadingDiv) {
+                loadingDiv.remove();
+                loadingDiv = null;
+            }
+            clearInterval(dotsInterval);
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            userInput.value = '';
+
+            // If we are in lead capture flow, handle locally
+            if (leadCapture.active) {
+                handleLeadMessage(message);
+                return;
+            }
+
+            // Detect intent to share contact and start flow
+            const msgLower = message.toLowerCase();
+            const leadTriggers = ['contact', 'work with us', 'get in touch', 'talk to sales', 'quote', 'call me', 'hire you', 'reach out'];
+            if (leadTriggers.some(t => msgLower.includes(t))) {
+                startLeadFlow();
+                return;
+            }
+
+            showLoading();
+
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    session_id: sessionId,
+                    user_details: userDetails
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                addMessage(data.response, false);
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                addMessage('Sorry, I encountered an error. Please try again.', false);
+            });
+        }
+
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function toggleChatbot() {
+            const chatWindow = document.getElementById('chatbot-window');
+            chatWindow.classList.toggle('hidden');
+            
+            // Show user details form on first open
+            if (!chatbotOpened && !chatWindow.classList.contains('hidden')) {
+                chatbotOpened = true;
+                showUserDetailsForm();
+            }
+        }
+
+        function closeChatbot() {
+            const chatWindow = document.getElementById('chatbot-window');
+            chatWindow.classList.add('hidden');
+        }
+
+        function refreshChat() {
+            // Clear chat messages except the initial greeting
+            const chatMessages = document.getElementById('chat-messages');
+            while (chatMessages.children.length > 1) {
+                chatMessages.removeChild(chatMessages.lastChild);
+            }
+            // Reset quick buttons visibility
+            const quickBtns = document.querySelectorAll('.quick-btn');
+            quickBtns.forEach(btn => btn.style.display = '');
+            // Clear input field
+            document.getElementById('user-input').value = '';
+            // Hide any open forms
+            document.getElementById('scheduling-form').style.display = 'none';
+            document.getElementById('cancel-form').style.display = 'none';
+            document.getElementById('calendar-container').style.display = 'none';
+            document.getElementById('lead-form').style.display = 'none';
+            document.getElementById('user-details-form').style.display = 'none';
+            leadCapture = { active: false, step: 0, data: {} };
+        }
+
+        function sendQuick(message, btnId) {
+            document.getElementById('user-input').value = message;
+            sendMessage();
+            if (btnId) {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.style.display = 'none';
+            }
+        }
+
+        function showLeadForm() {
+            const form = document.getElementById('lead-form');
+            form.style.display = 'block';
+        }
+
+        function cancelLeadForm() {
+            const form = document.getElementById('lead-form');
+            form.style.display = 'none';
+            document.getElementById('lead-name').value = '';
+            document.getElementById('lead-email').value = '';
+            document.getElementById('lead-phone').value = '';
+            document.getElementById('lead-message').value = '';
+        }
+
+        function submitLead() {
+            const name = document.getElementById('lead-name').value.trim();
+            const email = document.getElementById('lead-email').value.trim();
+            const phone = document.getElementById('lead-phone').value.trim();
+            const message = document.getElementById('lead-message').value.trim();
+
+            if (!name || (!email && !phone)) {
+                addMessage('Please provide your name and at least one contact method (email or phone).', false);
+                return;
+            }
+
+            fetch('/create_lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, phone, message })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, data })))
+            .then(({ status, data }) => {
+                if (data.success) {
+                    addMessage('Thanks! Your contact has been shared successfully.', false);
+                    cancelLeadForm();
+                } else {
+                    addMessage(`Error: ${data.message || 'Failed to submit lead.'}`, false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                addMessage('Failed to submit your contact. Please try again.', false);
+            });
+        }
+
+        // Conversational Lead Capture Flow
+        function startLeadFlow() {
+            if (leadCapture.active) return;
+            leadCapture = { active: true, step: 0, data: {} };
+            addMessage("Great! I can share your details with our team. What's your name?", false);
+        }
+
+        function handleLeadMessage(text) {
+            const t = text.trim();
+            if (!t) return;
+            if (leadCapture.step === 0) {
+                leadCapture.data.name = t;
+                leadCapture.step = 1;
+                addMessage("Thanks, " + t + ". What's your email? You can type 'skip' if you prefer.", false);
+                return;
+            }
+            if (leadCapture.step === 1) {
+                if (t.toLowerCase() !== 'skip') {
+                    leadCapture.data.email = t;
+                }
+                leadCapture.step = 2;
+                addMessage("Got it. What's your phone number? You can type 'skip' if you prefer.", false);
+                return;
+            }
+            if (leadCapture.step === 2) {
+                if (t.toLowerCase() !== 'skip') {
+                    leadCapture.data.phone = t;
+                }
+                // Require at least one contact
+                if (!leadCapture.data.email && !leadCapture.data.phone) {
+                    addMessage("Please share at least one contact method (email or phone).", false);
+                    leadCapture.step = 1;
+                    return;
+                }
+                leadCapture.step = 3;
+                addMessage("Any message for us? You can type 'skip' to submit now.", false);
+                return;
+            }
+            if (leadCapture.step === 3) {
+                if (t.toLowerCase() !== 'skip') {
+                    leadCapture.data.message = t;
+                }
+                // Submit lead
+                const payload = {
+                    name: leadCapture.data.name || '',
+                    email: leadCapture.data.email || '',
+                    phone: leadCapture.data.phone || '',
+                    message: leadCapture.data.message || ''
+                };
+                fetch('/create_lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json().then(data => ({ status: res.status, data })))
+                .then(({ status, data }) => {
+                    if (data.success) {
+                        addMessage("Thanks! I've shared your details with our team. We'll reach out soon. You can view your submission in the dashboard (internal).", false);
+                    } else {
+                        addMessage(`Sorry, I couldn't submit your details (${data.message || 'unknown error'}). Please try again later.`, false);
+                    }
+                })
+                .catch(() => {
+                    addMessage('Sorry, I could not submit your details due to a network error.', false);
+                })
+                .finally(() => {
+                    leadCapture = { active: false, step: 0, data: {} };
+                });
+            }
+        }
+
+        function showCancelForm() {
+            const form = document.getElementById('cancel-form');
+            form.style.display = 'block';
+        }
+
+        function cancelCancelForm() {
+            const form = document.getElementById('cancel-form');
+            form.style.display = 'none';
+            document.getElementById('appointment-id').value = '';
+        }
+
+        function submitCancellation() {
+            const appointmentId = document.getElementById('appointment-id').value.trim();
+
+            if (!appointmentId) {
+                addMessage('Please enter an appointment ID.', false);
+                return;
+            }
+
+            fetch('/cancel_appointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    appointment_id: appointmentId
+                })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, data })))
+            .then(({ status, data }) => {
+                if (status === 404) {
+                    addMessage(`Error: ${data.error}`, false);
+                } else if (data.error) {
+                    addMessage(`Error: ${data.error}`, false);
+                } else {
+                    addMessage(`Appointment ${data.appointment_id} has been cancelled successfully.`, false);
+                    cancelCancelForm();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addMessage('Failed to cancel appointment. Please try again.', false);
+            });
+        }
+
+        // Initialize speech recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    userInput.value = transcript;
+                    sendMessage();
+                };
+
+                recognition.onend = function() {
+                    isListening = false;
+                    document.getElementById('voice-btn').classList.remove('active');
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    isListening = false;
+                    document.getElementById('voice-btn').classList.remove('active');
+                    addMessage('Sorry, there was an error with voice recognition. Please try again.', false);
+                };
+            } else {
+                console.error('Speech recognition not supported');
+                document.getElementById('voice-btn').style.display = 'none';
+            }
+        }
+
+        // Initialize speech synthesis
+        function speak(text) {
+            if (speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                initSpeechRecognition();
+            }
+
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('voice-btn').classList.remove('active');
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('voice-btn').classList.add('active');
+            }
+        }
+
+        // User Details Functions
+        function showUserDetailsForm() {
+            const form = document.getElementById('user-details-form');
+            form.style.display = 'block';
+        }
+
+        function skipUserDetails() {
+            const form = document.getElementById('user-details-form');
+            form.style.display = 'none';
+            userDetails = { name: 'Anonymous', email: '', phone: '' };
+            addMessage('Welcome! How can I help you today?', false);
+        }
+
+        function submitUserDetails() {
+            const name = document.getElementById('user-name').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const phone = document.getElementById('user-phone').value.trim();
+
+            if (!name) {
+                addMessage('Please enter your name to continue.', false);
+                return;
+            }
+
+            userDetails = { name, email, phone };
+            const form = document.getElementById('user-details-form');
+            form.style.display = 'none';
+            
+            addMessage(`Welcome, ${name}! How can I help you today?`, false);
+        }
+
+    </script>
+</body>
+</html> 

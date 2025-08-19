@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        .card { transition: transform .2s, box-shadow .2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        .fade-in { animation: fadeIn .4s ease-out both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="hidden md:flex md:w-60 flex-col bg-white border-r">
+            <div class="h-16 flex items-center px-6 border-b">
+                <div class="w-8 h-8 rounded bg-blue-600 mr-2"></div>
+                <span class="font-bold text-gray-800">Dashboard</span>
+            </div>
+            <nav class="flex-1 p-3 space-y-1">
+                <a href="#" onclick="showTab('overview')" id="nav-overview" class="flex items-center gap-3 px-3 py-2 rounded text-blue-600 bg-blue-50">
+                    <span>🏠</span><span>Overview</span>
+                </a>
+                <a href="#" onclick="showTab('leads')" id="nav-leads" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
+                    <span>👤</span><span>Leads</span>
+                </a>
+                <a href="#" onclick="showTab('appointments')" id="nav-appointments" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
+                    <span>🗓️</span><span>Appointments</span>
+                </a>
+                <a href="#" onclick="showTab('conversations')" id="nav-conversations" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
+                    <span>💬</span><span>Conversations</span>
+                </a>
+                <a href="#" onclick="showTab('users')" id="nav-users" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
+                    <span>👥</span><span>User Details</span>
+                </a>
+                <a href="/logout" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
+                    <span>🚪</span><span>Logout</span>
+                </a>
+            </nav>
+            <div class="p-4 text-xs text-gray-400">v1.0</div>
+        </aside>
+
+        <!-- Main -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <button class="md:hidden px-2 py-1 rounded border">☰</button>
+                    <div class="relative flex-1 md:flex-none">
+                        <input class="w-full md:w-96 border rounded pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Search..." />
+                        <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="px-2 py-1 rounded hover:bg-gray-50">🔔</button>
+                    <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="p-4 md:p-6 space-y-6">
+                <!-- Overview Tab -->
+                <div id="overview-tab" class="tab-content">
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="card bg-white rounded-lg border p-4 fade-in">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Total Leads</p>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">7d</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalLeads }}</p>
+                    </div>
+                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.05s">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Leads Today</p>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">live</span>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.leadsToday }}</p>
+                    </div>
+                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.1s">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Appointments</p>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalAppointments }}</p>
+                    </div>
+                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.15s">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Upcoming</p>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.upcomingAppointments }}</p>
+                    </div>
+                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.2s">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Conversations</p>
+                        </div>
+                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalConversations }}</p>
+                    </div>
+                </div>
+
+                {% if error_message %}
+                <div class="bg-red-100 text-red-800 p-3 rounded">{{ error_message }}</div>
+                {% endif %}
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card bg-white rounded-lg border p-4 fade-in">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm font-semibold text-gray-700">Leads (Last 7 Days)</p>
+                            <div class="text-xs text-gray-400">UTC</div>
+                        </div>
+                        <canvas id="leadsChart" height="140"></canvas>
+                    </div>
+                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.05s">
+                        <p class="text-sm font-semibold mb-2 text-gray-700">Appointments by Status</p>
+                        <canvas id="apptChart" height="140"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tables -->
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Overview content - just a summary -->
+                    <div class="card bg-white rounded-lg border p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-3">Recent Activity</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                <div class="text-2xl font-bold text-blue-600">{{ metrics.totalLeads }}</div>
+                                <div class="text-sm text-gray-600">Total Leads</div>
+                            </div>
+                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="text-2xl font-bold text-green-600">{{ metrics.totalAppointments }}</div>
+                                <div class="text-sm text-gray-600">Total Appointments</div>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <div class="text-2xl font-bold text-purple-600">{{ metrics.totalConversations }}</div>
+                                <div class="text-sm text-gray-600">Total Conversations</div>
+                            </div>
+                            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                                <div class="text-2xl font-bold text-orange-600">{{ metrics.totalUsers }}</div>
+                                <div class="text-sm text-gray-600">Total Users</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                
+                <!-- Leads Tab -->
+                <div id="leads-tab" class="tab-content hidden">
+                    <div class="card bg-white rounded-lg border p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-3">Leads</h2>
+                        {% if not leads %}
+                        <div class="text-gray-600">No leads yet.</div>
+                        {% else %}
+                        <div class="rounded border overflow-hidden">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Created</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Name</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Email</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Phone</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Message</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Source</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lead in leads %}
+                                    <tr class="border-t">
+                                        <td class="px-4 py-2 text-sm">{{ lead.created_at }}</td>
+                                        <td class="px-4 py-2 text-sm font-medium">{{ lead.name }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ lead.email }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ lead.phone }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ lead.message }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ lead.source }}</td>
+                                        <td class="px-4 py-2 text-xs text-gray-500">{{ lead.id }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Appointments Tab -->
+                <div id="appointments-tab" class="tab-content hidden">
+                    <div class="card bg-white rounded-lg border p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-3">Appointments</h2>
+                        {% if not appointments %}
+                        <div class="text-gray-600">No appointments yet.</div>
+                        {% else %}
+                        <div class="rounded border overflow-hidden">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Time</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Title</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Notes</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Status</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appt in appointments %}
+                                    <tr class="border-t">
+                                        <td class="px-4 py-2 text-sm">{{ appt.time }}</td>
+                                        <td class="px-4 py-2 text-sm font-medium">{{ appt.title }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ appt.notes }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ appt.status }}</td>
+                                        <td class="px-4 py-2 text-xs text-gray-500">{{ appt.id }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Conversations Tab -->
+                <div id="conversations-tab" class="tab-content hidden">
+                    <div class="card bg-white rounded-lg border p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-3">Chatbot Conversations</h2>
+                        {% if not conversations %}
+                        <div class="text-gray-600">No conversations yet.</div>
+                        {% else %}
+                        <div class="rounded border overflow-hidden">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Time</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">User</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">User Message</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Bot Response</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Session ID</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for conv in conversations %}
+                                    <tr class="border-t">
+                                        <td class="px-4 py-2 text-sm">{{ conv.timestamp }}</td>
+                                        <td class="px-4 py-2 text-sm font-medium">{{ conv.user_details.name if conv.user_details else 'Anonymous' }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ conv.user_message }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ conv.bot_response }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ conv.session_id }}</td>
+                                        <td class="px-4 py-2 text-xs text-gray-500">{{ conv.id }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- User Details Tab -->
+                <div id="users-tab" class="tab-content hidden">
+                    <div class="card bg-white rounded-lg border p-4">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-3">User Details</h2>
+                        {% if not users %}
+                        <div class="text-gray-600">No users yet.</div>
+                        {% else %}
+                        <div class="rounded border overflow-hidden">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Name</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Email</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Phone</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">First Seen</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Last Seen</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Conversations</th>
+                                        <th class="text-left px-4 py-2 text-sm font-semibold text-gray-700">Session ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr class="border-t">
+                                        <td class="px-4 py-2 text-sm font-medium">{{ user.name }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ user.email }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ user.phone }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ user.first_seen }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ user.last_seen }}</td>
+                                        <td class="px-4 py-2 text-sm">{{ user.conversation_count }}</td>
+                                        <td class="px-4 py-2 text-xs text-gray-500">{{ user.session_id }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active state from all nav items
+            const navItems = document.querySelectorAll('nav a');
+            navItems.forEach(item => {
+                item.classList.remove('text-blue-600', 'bg-blue-50');
+                item.classList.add('text-gray-700', 'hover:bg-gray-50');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+            
+            // Add active state to selected nav item
+            const selectedNav = document.getElementById('nav-' + tabName);
+            if (selectedNav) {
+                selectedNav.classList.remove('text-gray-700', 'hover:bg-gray-50');
+                selectedNav.classList.add('text-blue-600', 'bg-blue-50');
+            }
+        }
+        
+        // Leads chart
+        const lc = document.getElementById('leadsChart');
+        if (lc && {{ leads_chart_labels|length|default(0) }} > 0) {
+            new Chart(lc, {
+                type: 'line',
+                data: {
+                    labels: {{ leads_chart_labels|tojson }},
+                    datasets: [{
+                        label: 'Leads',
+                        data: {{ leads_chart_data|tojson }},
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        fill: true,
+                        tension: .35,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+        // Appointments bar
+        const ac = document.getElementById('apptChart');
+        if (ac && {{ appt_status_labels|length|default(0) }} > 0) {
+            new Chart(ac, {
+                type: 'bar',
+                data: {
+                    labels: {{ appt_status_labels|tojson }},
+                    datasets: [{
+                        data: {{ appt_status_data|tojson }},
+                        backgroundColor: '#60a5fa',
+                        borderColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
