@@ -3,26 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>IM Solutions Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        .card { transition: transform .2s, box-shadow .2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-        .fade-in { animation: fadeIn .4s ease-out both; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+        :root{
+            --brand-500:#2563eb; /* blue-600 */
+            --brand-400:#3b82f6; /* blue-500 */
+            --ink-900:#0f172a;  /* slate-900 */
+        }
+        body{
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.18), transparent 60%),
+                        radial-gradient(1000px 500px at 110% -10%, rgba(99,102,241,.15), transparent 55%),
+                        #f3f4f6;
+        }
+        .glass{ background: rgba(255,255,255,.85); backdrop-filter: saturate(140%) blur(8px); }
+        .card{ transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; border: 1px solid rgba(15,23,42,.06); }
+        .card:hover{ transform: translateY(-4px); box-shadow: 0 18px 40px rgba(2,8,20,.08); border-color: rgba(59,130,246,.25); }
+        .tab-content{ animation: fadeInUp .35s ease both; }
+        .will-animate{ opacity: 0; transform: translateY(10px); }
+        .animate-in{ opacity: 1 !important; transform: none !important; transition: opacity .5s ease, transform .5s ease; }
+        @keyframes fadeInUp{ from{ opacity:0; transform: translateY(8px);} to{ opacity:1; transform:none; } }
+        @keyframes floaty{ 0%{ transform: translateY(0);} 50%{ transform: translateY(-4px);} 100%{ transform: translateY(0);} }
+        .kpi-number{ display:inline-block; min-width: 2ch; }
+        .accent-pill{ background: linear-gradient(90deg, rgba(16,185,129,.12), rgba(5,150,105,.12)); color:#0f766e; }
+        .kpi-accent{ background: linear-gradient(90deg, #0f172a, #334155); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .sidebar-active{ color:#1d4ed8 !important; background: linear-gradient(90deg, rgba(59,130,246,.10), transparent); }
+        .shadow-soft{ box-shadow: 0 4px 14px rgba(2,8,20,.06); }
+        .btn{ transition: transform .15s ease, box-shadow .2s ease; }
+        .btn:active{ transform: translateY(1px); }
+        .table-wrap{ overflow: auto; border-radius:.5rem; border:1px solid rgba(15,23,42,.06); }
+        thead th{ position: sticky; top:0; background: #f8fafc; }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="hidden md:flex md:w-60 flex-col bg-white border-r">
+        <aside id="sidebar" class="hidden md:flex md:w-64 flex-col glass border-r shadow-soft">
             <div class="h-16 flex items-center px-6 border-b">
-                <div class="w-8 h-8 rounded bg-blue-600 mr-2"></div>
-                <span class="font-bold text-gray-800">Dashboard</span>
+                <img src="/static/weblogo.png" onerror="this.style.display='none'" class="w-8 h-8 rounded mr-2" alt="logo" />
+                <span class="font-semibold text-gray-800">IM Solutions</span>
             </div>
             <nav class="flex-1 p-3 space-y-1">
-                <a href="#" onclick="showTab('overview')" id="nav-overview" class="flex items-center gap-3 px-3 py-2 rounded text-blue-600 bg-blue-50">
+                <a href="#" onclick="showTab('overview')" id="nav-overview" class="flex items-center gap-3 px-3 py-2 rounded text-blue-600 sidebar-active">
                     <span>🏠</span><span>Overview</span>
                 </a>
                 <a href="#" onclick="showTab('leads')" id="nav-leads" class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 hover:bg-gray-50">
@@ -41,23 +68,25 @@
                     <span>🚪</span><span>Logout</span>
                 </a>
             </nav>
-            <div class="p-4 text-xs text-gray-400">v1.0</div>
+            <div class="p-4 text-xs text-gray-400">v1.1 • Enhanced UI</div>
         </aside>
 
         <!-- Main -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Topbar -->
-            <header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6">
+            <header class="h-16 glass border-b flex items-center justify-between px-4 md:px-6 shadow-soft">
                 <div class="flex items-center gap-3 w-full md:w-auto">
-                    <button class="md:hidden px-2 py-1 rounded border">☰</button>
+                    <button id="menu-btn" class="md:hidden px-2 py-1 rounded border">☰</button>
                     <div class="relative flex-1 md:flex-none">
-                        <input class="w-full md:w-96 border rounded pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Search..." />
+                        <input class="w-full md:w-96 border rounded pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Search…" />
                         <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button class="px-2 py-1 rounded hover:bg-gray-50">🔔</button>
-                    <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                <div class="flex items-center gap-2">
+                    <span class="hidden sm:inline text-sm text-gray-500">IM Solutions Dashboard</span>
+                    <span class="px-2 py-0.5 rounded-full text-xs accent-pill">Operational</span>
+                    <button class="btn px-2 py-1 rounded hover:bg-gray-50">🔔</button>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500"></div>
                 </div>
             </header>
 
@@ -66,38 +95,38 @@
                 <!-- Overview Tab -->
                 <div id="overview-tab" class="tab-content">
                 <!-- Stat Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="card bg-white rounded-lg border p-4 fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between">
                             <p class="text-sm text-gray-500">Total Leads</p>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">7d</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full accent-pill">7d</span>
                         </div>
-                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalLeads }}</p>
+                        <p class="mt-2 text-3xl font-bold kpi-accent kpi-number" data-target="{{ metrics.totalLeads }}">0</p>
                     </div>
-                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.05s">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between">
                             <p class="text-sm text-gray-500">Leads Today</p>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">live</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full accent-pill">live</span>
                         </div>
-                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.leadsToday }}</p>
+                        <p class="mt-2 text-3xl font-bold kpi-accent kpi-number" data-target="{{ metrics.leadsToday }}">0</p>
                     </div>
-                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.1s">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between">
                             <p class="text-sm text-gray-500">Appointments</p>
                         </div>
-                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalAppointments }}</p>
+                        <p class="mt-2 text-3xl font-bold kpi-accent kpi-number" data-target="{{ metrics.totalAppointments }}">0</p>
                     </div>
-                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.15s">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between">
                             <p class="text-sm text-gray-500">Upcoming</p>
                         </div>
-                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.upcomingAppointments }}</p>
+                        <p class="mt-2 text-3xl font-bold kpi-accent kpi-number" data-target="{{ metrics.upcomingAppointments }}">0</p>
                     </div>
-                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.2s">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between">
                             <p class="text-sm text-gray-500">Conversations</p>
                         </div>
-                        <p class="mt-2 text-2xl font-bold text-gray-800">{{ metrics.totalConversations }}</p>
+                        <p class="mt-2 text-3xl font-bold kpi-accent kpi-number" data-target="{{ metrics.totalConversations }}">0</p>
                     </div>
                 </div>
 
@@ -107,14 +136,14 @@
 
                 <!-- Charts -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="card bg-white rounded-lg border p-4 fade-in">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-sm font-semibold text-gray-700">Leads (Last 7 Days)</p>
                             <div class="text-xs text-gray-400">UTC</div>
                         </div>
                         <canvas id="leadsChart" height="140"></canvas>
                     </div>
-                    <div class="card bg-white rounded-lg border p-4 fade-in" style="animation-delay:.05s">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <p class="text-sm font-semibold mb-2 text-gray-700">Appointments by Status</p>
                         <canvas id="apptChart" height="140"></canvas>
                     </div>
@@ -123,23 +152,23 @@
                 <!-- Tables -->
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Overview content - just a summary -->
-                    <div class="card bg-white rounded-lg border p-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <h2 class="text-lg font-semibold text-gray-800 mb-3">Recent Activity</h2>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="text-center p-4 bg-blue-50 rounded-lg">
-                                <div class="text-2xl font-bold text-blue-600">{{ metrics.totalLeads }}</div>
+                            <div class="text-center p-4 bg-emerald-50 rounded-lg">
+                                <div class="text-2xl font-bold text-emerald-600 kpi-number" data-target="{{ metrics.totalLeads }}">0</div>
                                 <div class="text-sm text-gray-600">Total Leads</div>
                             </div>
-                            <div class="text-center p-4 bg-green-50 rounded-lg">
-                                <div class="text-2xl font-bold text-green-600">{{ metrics.totalAppointments }}</div>
+                            <div class="text-center p-4 bg-teal-50 rounded-lg">
+                                <div class="text-2xl font-bold text-teal-600 kpi-number" data-target="{{ metrics.totalAppointments }}">0</div>
                                 <div class="text-sm text-gray-600">Total Appointments</div>
                             </div>
-                            <div class="text-center p-4 bg-purple-50 rounded-lg">
-                                <div class="text-2xl font-bold text-purple-600">{{ metrics.totalConversations }}</div>
+                            <div class="text-center p-4 bg-sky-50 rounded-lg">
+                                <div class="text-2xl font-bold text-sky-600 kpi-number" data-target="{{ metrics.totalConversations }}">0</div>
                                 <div class="text-sm text-gray-600">Total Conversations</div>
                             </div>
-                            <div class="text-center p-4 bg-orange-50 rounded-lg">
-                                <div class="text-2xl font-bold text-orange-600">{{ metrics.totalUsers }}</div>
+                            <div class="text-center p-4 bg-amber-50 rounded-lg">
+                                <div class="text-2xl font-bold text-amber-600 kpi-number" data-target="{{ metrics.totalUsers }}">0</div>
                                 <div class="text-sm text-gray-600">Total Users</div>
                             </div>
                         </div>
@@ -149,12 +178,12 @@
                 
                 <!-- Leads Tab -->
                 <div id="leads-tab" class="tab-content hidden">
-                    <div class="card bg-white rounded-lg border p-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <h2 class="text-lg font-semibold text-gray-800 mb-3">Leads</h2>
                         {% if not leads %}
                         <div class="text-gray-600">No leads yet.</div>
                         {% else %}
-                        <div class="rounded border overflow-hidden">
+                        <div class="table-wrap rounded overflow-hidden">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -169,7 +198,7 @@
                                 </thead>
                                 <tbody>
                                     {% for lead in leads %}
-                                    <tr class="border-t">
+                                    <tr class="border-t hover:bg-gray-50">
                                         <td class="px-4 py-2 text-sm">{{ lead.created_at }}</td>
                                         <td class="px-4 py-2 text-sm font-medium">{{ lead.name }}</td>
                                         <td class="px-4 py-2 text-sm">{{ lead.email }}</td>
@@ -188,12 +217,12 @@
                 
                 <!-- Appointments Tab -->
                 <div id="appointments-tab" class="tab-content hidden">
-                    <div class="card bg-white rounded-lg border p-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <h2 class="text-lg font-semibold text-gray-800 mb-3">Appointments</h2>
                         {% if not appointments %}
                         <div class="text-gray-600">No appointments yet.</div>
                         {% else %}
-                        <div class="rounded border overflow-hidden">
+                        <div class="table-wrap rounded overflow-hidden">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -206,7 +235,7 @@
                                 </thead>
                                 <tbody>
                                     {% for appt in appointments %}
-                                    <tr class="border-t">
+                                    <tr class="border-t hover:bg-gray-50">
                                         <td class="px-4 py-2 text-sm">{{ appt.time }}</td>
                                         <td class="px-4 py-2 text-sm font-medium">{{ appt.title }}</td>
                                         <td class="px-4 py-2 text-sm">{{ appt.notes }}</td>
@@ -223,12 +252,12 @@
                 
                 <!-- Conversations Tab -->
                 <div id="conversations-tab" class="tab-content hidden">
-                    <div class="card bg-white rounded-lg border p-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <h2 class="text-lg font-semibold text-gray-800 mb-3">Chatbot Conversations</h2>
                         {% if not conversations %}
                         <div class="text-gray-600">No conversations yet.</div>
                         {% else %}
-                        <div class="rounded border overflow-hidden">
+                        <div class="table-wrap rounded overflow-hidden">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -242,7 +271,7 @@
                                 </thead>
                                 <tbody>
                                     {% for conv in conversations %}
-                                    <tr class="border-t">
+                                    <tr class="border-t hover:bg-gray-50">
                                         <td class="px-4 py-2 text-sm">{{ conv.timestamp }}</td>
                                         <td class="px-4 py-2 text-sm font-medium">{{ conv.user_details.name if conv.user_details else 'Anonymous' }}</td>
                                         <td class="px-4 py-2 text-sm">{{ conv.user_message }}</td>
@@ -260,12 +289,12 @@
                 
                 <!-- User Details Tab -->
                 <div id="users-tab" class="tab-content hidden">
-                    <div class="card bg-white rounded-lg border p-4">
+                    <div class="card bg-white rounded-lg p-4 will-animate">
                         <h2 class="text-lg font-semibold text-gray-800 mb-3">User Details</h2>
                         {% if not users %}
                         <div class="text-gray-600">No users yet.</div>
                         {% else %}
-                        <div class="rounded border overflow-hidden">
+                        <div class="table-wrap rounded overflow-hidden">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -280,7 +309,7 @@
                                 </thead>
                                 <tbody>
                                     {% for user in users %}
-                                    <tr class="border-t">
+                                    <tr class="border-t hover:bg-gray-50">
                                         <td class="px-4 py-2 text-sm font-medium">{{ user.name }}</td>
                                         <td class="px-4 py-2 text-sm">{{ user.email }}</td>
                                         <td class="px-4 py-2 text-sm">{{ user.phone }}</td>
@@ -299,54 +328,96 @@
             </main>
         </div>
     </div>
+    <script id="chart-data" type="application/json">
+    {{ {
+        'leadsLabels': (leads_chart_labels|default([])),
+        'leadsData': (leads_chart_data|default([])),
+        'apptLabels': (appt_status_labels|default([])),
+        'apptData': (appt_status_data|default([]))
+    } | tojson }}
+    </script>
     <script>
-        // Tab functionality
-        function showTab(tabName) {
-            // Hide all tab contents
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active state from all nav items
-            const navItems = document.querySelectorAll('nav a');
-            navItems.forEach(item => {
-                item.classList.remove('text-blue-600', 'bg-blue-50');
-                item.classList.add('text-gray-700', 'hover:bg-gray-50');
-            });
-            
-            // Show selected tab content
-            const selectedTab = document.getElementById(tabName + '-tab');
-            if (selectedTab) {
-                selectedTab.classList.remove('hidden');
+        // Mobile sidebar toggle
+        (function(){
+            const btn = document.getElementById('menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            if (btn && sidebar) {
+                btn.addEventListener('click', ()=>{
+                    const hidden = getComputedStyle(sidebar).display === 'none';
+                    if (hidden) {
+                        sidebar.style.display = 'flex';
+                        sidebar.style.position = 'fixed';
+                        sidebar.style.height = '100vh';
+                        sidebar.style.zIndex = '50';
+                        sidebar.style.left = '0';
+                        sidebar.style.top = '0';
+                        sidebar.style.animation = 'fadeInUp .25s ease both';
+                    } else {
+                        sidebar.style.display = 'none';
+                        sidebar.style.position = '';
+                        sidebar.style.height = '';
+                        sidebar.style.zIndex = '';
+                        sidebar.style.left = '';
+                        sidebar.style.top = '';
+                        sidebar.style.animation = '';
+                    }
+                });
             }
-            
-            // Add active state to selected nav item
-            const selectedNav = document.getElementById('nav-' + tabName);
-            if (selectedNav) {
-                selectedNav.classList.remove('text-gray-700', 'hover:bg-gray-50');
-                selectedNav.classList.add('text-blue-600', 'bg-blue-50');
+        })();
+        // Tab functionality with subtle animation and active styling
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.classList.add('hidden'));
+            const selected = document.getElementById(tabName + '-tab');
+            if (selected) {
+                selected.classList.remove('hidden');
+                // restart animation
+                selected.classList.remove('tab-content');
+                void selected.offsetWidth; // reflow
+                selected.classList.add('tab-content');
+            }
+            const navItems = document.querySelectorAll('nav a');
+            navItems.forEach(n => {
+                n.classList.remove('sidebar-active', 'text-blue-600');
+                n.classList.add('text-gray-700');
+            });
+            const active = document.getElementById('nav-' + tabName);
+            if (active) {
+                active.classList.add('sidebar-active', 'text-blue-600');
+                active.classList.remove('text-gray-700');
             }
         }
         
+        // Safely serialize Jinja variables into JS
+        (function(){
+            const dataScript = document.getElementById('chart-data');
+            let payload = {};
+            try { payload = JSON.parse(dataScript ? dataScript.textContent : '{}'); } catch(e){}
+            window.leadsLabels = Array.isArray(payload.leadsLabels) ? payload.leadsLabels : [];
+            window.leadsData   = Array.isArray(payload.leadsData) ? payload.leadsData : [];
+            window.apptLabels  = Array.isArray(payload.apptLabels) ? payload.apptLabels : [];
+            window.apptData    = Array.isArray(payload.apptData) ? payload.apptData : [];
+        })();
+        
         // Leads chart
         const lc = document.getElementById('leadsChart');
-        if (lc && {{ leads_chart_labels|length|default(0) }} > 0) {
+        if (lc && (window.leadsLabels && window.leadsLabels.length > 0)) {
             new Chart(lc, {
                 type: 'line',
                 data: {
-                    labels: {{ leads_chart_labels|tojson }},
+                    labels: window.leadsLabels,
                     datasets: [{
                         label: 'Leads',
-                        data: {{ leads_chart_data|tojson }},
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        data: window.leadsData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.18)',
                         fill: true,
                         tension: .35,
                         pointRadius: 3
                     }]
                 },
                 options: {
+                    animation: { duration: 800, easing: 'easeOutQuart' },
                     plugins: { legend: { display: false } },
                     scales: { y: { beginAtZero: true } }
                 }
@@ -354,23 +425,48 @@
         }
         // Appointments bar
         const ac = document.getElementById('apptChart');
-        if (ac && {{ appt_status_labels|length|default(0) }} > 0) {
+        if (ac && (window.apptLabels && window.apptLabels.length > 0)) {
             new Chart(ac, {
                 type: 'bar',
                 data: {
-                    labels: {{ appt_status_labels|tojson }},
+                    labels: window.apptLabels,
                     datasets: [{
-                        data: {{ appt_status_data|tojson }},
-                        backgroundColor: '#60a5fa',
-                        borderColor: '#3b82f6'
+                        data: window.apptData,
+                        backgroundColor: '#34d399',
+                        borderColor: '#10b981'
                     }]
                 },
                 options: {
+                    animation: { duration: 700, easing: 'easeOutCubic' },
                     plugins: { legend: { display: false } },
                     scales: { y: { beginAtZero: true } }
                 }
             });
         }
+
+        // Reveal-on-scroll animations
+        const observer = new IntersectionObserver((entries)=>{
+            entries.forEach(e=>{
+                if(e.isIntersecting){ e.target.classList.add('animate-in'); observer.unobserve(e.target); }
+            });
+        }, { threshold:.12 });
+        document.querySelectorAll('.will-animate').forEach(el=>observer.observe(el));
+
+        // Count-up animations for KPI numbers
+        function animateCount(el){
+            const target = parseInt(el.getAttribute('data-target')||'0',10);
+            const duration = 900;
+            const start = 0;
+            const startTime = performance.now();
+            function tick(now){
+                const p = Math.min(1, (now-startTime)/duration);
+                const eased = 1 - Math.pow(1-p, 3);
+                el.textContent = Math.round(start + (target-start)*eased).toLocaleString();
+                if (p<1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+        document.querySelectorAll('.kpi-number').forEach(animateCount);
     </script>
 </body>
 </html>
